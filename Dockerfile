@@ -1,16 +1,12 @@
-FROM node:16.16.0-buster AS build
-WORKDIR /build
-
-COPY package.json package.json
-COPY package-lock.json package-lock.json
-RUN npm ci
-
-COPY public/ public
-COPY src/ src
-RUN npm run build
-
-FROM httpd:alpine
-WORKDIR /usr/local/apache2/htdocs
-COPY --from=build /build/build/ .
-RUN chown -R www-data:www-data /usr/local/apache2/htdocs \
-    && sed -i "s/Listen 80/Listen \${PORT}/g" /usr/local/apache2/conf/httpd.conf
+FROM jenkins/jenkins:2.361.4-jdk11
+USER root
+RUN apt-get update && apt-get install -y lsb-release
+RUN curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc \
+  https://download.docker.com/linux/deb...
+RUN echo "deb [arch=$(dpkg --print-architecture) \
+  signed-by=/usr/share/keyrings/docker-archive-keyring.asc] \
+  https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable"  /etc/apt/sources.list.d/docker.list
+RUN apt-get update && apt-get install -y docker-ce-cli && apt-get install -y nodejs && apt-get install -y npm
+USER jenkins
+RUN jenkins-plugin-cli --plugins "blueocean:1.25.8 docker-workflow:521.v1a_a_dd2073b_2e"
