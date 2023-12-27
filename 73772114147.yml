@@ -1,0 +1,20 @@
+---
+- name: Ansible Playbook
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Creating a file 
+      file:
+        path: /73772114147.txt
+        state: touch
+
+    - name: Creating a directory
+      file:
+        path: /73772114147
+        state: directory
+
+    - name: Install a package
+      apt:
+        name: tree
+        state: present
+
